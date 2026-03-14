@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+/**
+ * @property bool $is_active
+ * @property bool $is_featured
+ */
 class SubscriptionPlan extends BaseModel
 {
     protected $fillable = [

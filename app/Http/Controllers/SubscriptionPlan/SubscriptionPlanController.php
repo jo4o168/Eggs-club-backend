@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\SubscriptionPlan;
 
+use App\Http\Controllers\Controller;
 use App\Http\Filters\Filter\DefaultFilter;
 use App\Http\Helpers\HttpResponse;
 use App\Http\Requests\SubscriptionPlan\StoreSubscriptionPlanRequest;
