@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Enum\ProfileRole;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SignUpRequest extends FormRequest
 {
@@ -12,6 +14,7 @@ class SignUpRequest extends FormRequest
             "username" => ["required", "unique:users"],
             "email" => ["required", "email", "unique:users"],
             "name" => ["required", "string"],
+            "role" => ["required", "integer", Rule::enum(ProfileRole::class)],
             "password" => [
                 "required",
                 'confirmed',
