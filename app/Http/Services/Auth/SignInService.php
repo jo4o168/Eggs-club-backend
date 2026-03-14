@@ -12,7 +12,7 @@ class SignInService
         if (!Auth::attempt($data)) {
             abort(401);
         }
-        $user = User::query()->select('id', 'name')->find(Auth::id());
+        $user = User::query()->select('id', 'name', 'roles')->find(Auth::id());
         $accessToken = $user->createToken('auth_token')->plainTextToken;
         return compact('accessToken', 'user');
 
