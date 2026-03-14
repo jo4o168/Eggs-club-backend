@@ -16,7 +16,6 @@ class UpdateProfileRequest extends BaseRequest
             'email' => ['sometimes', 'string', 'email'],
             'phone' => ['sometimes', 'string', 'nullable'],
             'avatar_url' => ['sometimes', 'string', 'nullable'],
-            'user_id' => ['sometimes', 'integer', 'exists:users,id'],
         ];
     }
 }

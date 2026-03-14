@@ -16,7 +16,7 @@ class StoreProfileRequest extends BaseRequest
             'email' => ['required', 'string', 'email'],
             'phone' => ['sometimes', 'string', 'nullable'],
             'avatar_url' => ['sometimes', 'string', 'nullable'],
-            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'user_id' => ['required', 'integer', 'exists:users,id', 'unique:profiles,user_id'],
         ];
     }
 }
