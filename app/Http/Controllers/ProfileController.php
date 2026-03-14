@@ -40,21 +40,21 @@ class ProfileController extends Controller
         return HttpResponse::created([]);
     }
 
-    public function show(Profile $contact): JsonResponse
+    public function show(Profile $profile): JsonResponse
     {
-        $result = $this->showService->run($contact);
+        $result = $this->showService->run($profile);
         return HttpResponse::ok($result);
     }
 
-    public function update(UpdateProfileRequest $request, Profile $contact): Response
+    public function update(UpdateProfileRequest $request, Profile $profile): Response
     {
-        $this->updateService->run($request->validated(), $contact);
+        $this->updateService->run($request->validated(), $profile);
         return HttpResponse::noContent();
     }
 
-    public function destroy(Profile $contact): Response
+    public function destroy(Profile $profile): Response
     {
-        $this->deleteService->run($contact);
+        $this->deleteService->run($profile);
         return HttpResponse::noContent();
     }
 }
