@@ -11,6 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 /**
  * @property bool $master
  * @property UserPermission $userPermission
+ * @property Profile $profile
  */
 class User extends Authenticatable
 {
@@ -36,5 +37,10 @@ class User extends Authenticatable
     public function userPermissions(): HasOne
     {
         return $this->hasOne(UserPermission::class);
+    }
+
+    public function profile(): HasOne
+    {
+        return $this->hasOne(Profile::class);
     }
 }
