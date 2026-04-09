@@ -14,7 +14,7 @@ class SignUpService
             'username' => $data['username'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'roles' => $data['role'],
+            'roles' => $data['roles'],
         ]);
     }
 
