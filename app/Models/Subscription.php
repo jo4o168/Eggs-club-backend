@@ -12,8 +12,8 @@ class Subscription extends BaseModel
         'next_delivery_date',
         'pause_until',
         'customer_id',
-        'producer_id',
         'subscription_plan_id',
+        'payment_method_id',
     ];
 
     public function customer(): BelongsTo
@@ -25,4 +25,5 @@ class Subscription extends BaseModel
     {
         return $this->belongsTo(SubscriptionPlan::class);
     }
+
 }

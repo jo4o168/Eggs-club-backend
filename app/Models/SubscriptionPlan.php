@@ -26,4 +26,14 @@ class SubscriptionPlan extends BaseModel
         return $this->belongsTo(Profile::class, 'producer_id');
     }
 
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'is_featured' => 'boolean',
+            'price' => 'decimal:2',
+            'eggs_quantity' => 'integer',
+            'frequency' => 'integer',
+        ];
+    }
 }

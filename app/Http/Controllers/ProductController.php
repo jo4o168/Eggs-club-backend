@@ -15,6 +15,7 @@ use App\Http\Services\Product\StoreProductService;
 use App\Http\Services\Product\UpdateProductService;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class
@@ -31,15 +32,18 @@ ProductController extends Controller
 
     }
 
-    public function index(DefaultFilter $filter): JsonResponse
+    public function index(DefaultFilter $filter, Request $request): JsonResponse
     {
-        $result = $this->listService->run($filter);
+        $result = $this->listService->run($filter, $request->user());
         return HttpResponse::ok(ListProductResource::collection($result));
     }
 
     public function store(StoreProductRequest $request): JsonResponse
     {
-        $this->storeService->run($request->validated());
+        $payload = $request->validated();
+        $payload['image'] = $request->file('image');
+
+        $this->storeService->run($payload, $request->user());
         return HttpResponse::created([]);
     }
 
@@ -51,13 +55,16 @@ ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product): Response
     {
-        $this->updateService->run($request->validated(), $product);
+        $payload = $request->validated();
+        $payload['image'] = $request->file('image');
+
+        $this->updateService->run($payload, $product, $request->user());
         return HttpResponse::noContent();
     }
 
-    public function destroy(Product $product): Response
+    public function destroy(Request $request, Product $product): Response
     {
-        $this->deleteService->run($product);
+        $this->deleteService->run($product, $request->user());
         return HttpResponse::noContent();
     }
 }

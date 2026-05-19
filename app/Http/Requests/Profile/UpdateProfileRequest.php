@@ -12,9 +12,15 @@ class UpdateProfileRequest extends BaseRequest
     {
         return [
             'name' => ['sometimes', 'string'],
-            'role' => ['sometimes', 'integer', Rule::enum(ProfileRole::class)],
+            'role' => ['sometimes', 'integer', Rule::in([ProfileRole::CLIENT->value, ProfileRole::PRODUCER->value])],
             'email' => ['sometimes', 'string', 'email'],
             'phone' => ['sometimes', 'string', 'nullable'],
+            'cpf' => ['sometimes', 'string', 'nullable'],
+            'address' => ['sometimes', 'string', 'nullable'],
+            'city' => ['sometimes', 'string', 'nullable'],
+            'state' => ['sometimes', 'string', 'nullable'],
+            'zip_code' => ['sometimes', 'string', 'nullable'],
+            'complement' => ['sometimes', 'string', 'nullable'],
             'avatar_url' => ['sometimes', 'string', 'nullable'],
         ];
     }

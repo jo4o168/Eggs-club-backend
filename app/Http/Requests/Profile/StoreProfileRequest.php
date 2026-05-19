@@ -12,7 +12,7 @@ class StoreProfileRequest extends BaseRequest
     {
         return [
             'name' => ['required', 'string'],
-            'role' => ['sometimes', 'integer', Rule::enum(ProfileRole::class)],
+            'role' => ['sometimes', 'integer', Rule::in([ProfileRole::CLIENT->value, ProfileRole::PRODUCER->value])],
             'email' => ['required', 'string', 'email'],
             'phone' => ['sometimes', 'string', 'nullable'],
             'avatar_url' => ['sometimes', 'string', 'nullable'],

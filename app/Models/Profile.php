@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string $name
@@ -14,6 +15,12 @@ class Profile extends BaseModel
         'role',
         'email',
         'phone',
+        'cpf',
+        'address',
+        'city',
+        'state',
+        'zip_code',
+        'complement',
         'avatar_url',
         'user_id',
     ];
@@ -21,5 +28,10 @@ class Profile extends BaseModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function producerSetting(): HasOne
+    {
+        return $this->hasOne(ProducerSetting::class, 'producer_id');
     }
 }

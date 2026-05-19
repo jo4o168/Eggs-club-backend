@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests\Product;
 
-use App\Enum\UnitEggs;
+use App\Enum\EggColor;
+use App\Enum\EggSize;
 use App\Http\Requests\BaseRequest;
 use Illuminate\Validation\Rule;
 
@@ -12,13 +13,39 @@ class StoreProductRequest extends BaseRequest
     {
         return [
             'name' => ['required', 'string'],
+            'egg_size' => ['required', Rule::enum(EggSize::class)],
+            'egg_color' => ['required', Rule::enum(EggColor::class)],
+            'kit_quantity' => ['required', 'integer', 'min:1'],
             'description' => ['sometimes', 'nullable', 'string'],
-            'stock_quantity' => ['sometimes', 'integer'],
-            'unit' => ['sometimes', 'integer', Rule::enum(UnitEggs::class)],
             'price' => ['required', 'numeric'],
+            'subscription_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'one_time_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'allow_subscription' => ['sometimes', 'boolean'],
+            'allow_one_time_purchase' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],
             'image_url' => ['sometimes', 'nullable', 'string'],
-            'producer_id' => ['required', 'integer', 'exists:profiles,id'],
+            'image' => ['sometimes', 'file', 'max:5120', 'extensions:jpg,jpeg,png,webp,gif,bmp,svg,avif,jfif'],
+            'producer_id' => ['sometimes', 'integer', 'exists:profiles,id'],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'name' => 'nome do kit',
+            'egg_size' => 'tamanho do ovo',
+            'egg_color' => 'cor do ovo',
+            'kit_quantity' => 'quantidade por kit',
+            'description' => 'descrição',
+            'price' => 'preço',
+            'subscription_price' => 'preço da assinatura',
+            'one_time_price' => 'preço da compra única',
+            'allow_subscription' => 'permitir assinatura',
+            'allow_one_time_purchase' => 'permitir compra única',
+            'is_active' => 'ativo',
+            'image' => 'imagem',
+            'image_url' => 'imagem',
+            'producer_id' => 'produtor',
         ];
     }
 }

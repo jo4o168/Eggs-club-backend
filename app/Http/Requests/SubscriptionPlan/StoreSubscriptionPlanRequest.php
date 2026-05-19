@@ -16,7 +16,7 @@ class StoreSubscriptionPlanRequest extends BaseRequest
             'price' => ['required', 'numeric'],
             'eggs_quantity' => ['required', 'integer'],
             'frequency' => ['sometimes', 'integer', Rule::enum(SubscriptionFrequency::class)],
-            'producer_id' => ['required', 'integer', 'exists:profiles,id'],
+            'producer_id' => ['sometimes', 'integer', 'exists:profiles,id'],
         ];
     }
 }

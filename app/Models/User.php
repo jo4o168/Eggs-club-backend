@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -13,9 +16,9 @@ use Laravel\Sanctum\HasApiTokens;
  * @property UserPermission $userPermission
  * @property Profile $profile
  */
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmailContract
 {
-    use HasApiTokens, Notifiable, SoftDeletes;
+    use CanResetPassword, HasApiTokens, MustVerifyEmail, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -32,6 +35,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'roles' => 'json',
+        'email_verified_at' => 'datetime',
     ];
 
     public function userPermissions(): HasOne
