@@ -6,6 +6,7 @@ use App\Http\Filters\Filter\DefaultFilter;
 use App\Http\Helpers\HttpResponse;
 use App\Http\Requests\Subscription\StoreSubscriptionRequest;
 use App\Http\Requests\Subscription\UpdateSubscriptionRequest;
+use App\Http\Resources\Subscriptions\SubscriptionResource;
 use App\Http\Services\Subscription\DeleteSubscriptionService;
 use App\Http\Services\Subscription\ListSubscriptionService;
 use App\Http\Services\Subscription\ShowSubscriptionService;
@@ -14,9 +15,9 @@ use App\Http\Services\Subscription\UpdateSubscriptionService;
 use App\Models\Subscription;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Http\Request;
 
-class
-SubscriptionController extends Controller
+class SubscriptionController extends Controller
 {
     public function __construct(
         private readonly ListSubscriptionService   $listService,
@@ -29,15 +30,15 @@ SubscriptionController extends Controller
 
     }
 
-    public function index(DefaultFilter $filter): JsonResponse
+    public function index(DefaultFilter $filter, Request $request): JsonResponse
     {
-        $result = $this->listService->run($filter);
-        return HttpResponse::ok($result);
+        $result = $this->listService->run($filter, $request->user());
+        return HttpResponse::ok(SubscriptionResource::collection($result));
     }
 
     public function store(StoreSubscriptionRequest $request): Response
     {
-        $this->storeService->run($request->validated());
+        $this->storeService->run($request->validated(), $request->user());
         return HttpResponse::noContent();
     }
 

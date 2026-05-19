@@ -13,6 +13,7 @@ use App\Http\Services\SubscriptionPlan\ShowSubscriptionPlanService;
 use App\Http\Services\SubscriptionPlan\StoreSubscriptionPlanService;
 use App\Http\Services\SubscriptionPlan\UpdateSubscriptionPlanService;
 use App\Models\SubscriptionPlan;
+use Illuminate\Http\Request;
 
 class SubscriptionPlanController extends Controller
 {
@@ -27,15 +28,15 @@ class SubscriptionPlanController extends Controller
 
     }
 
-    public function index(DefaultFilter $filter)
+    public function index(DefaultFilter $filter, Request $request)
     {
-        $result = $this->listService->run($filter);
+        $result = $this->listService->run($filter, $request->user());
         return HttpResponse::ok($result);
     }
 
     public function store(StoreSubscriptionPlanRequest $request)
     {
-        $this->storeService->run($request->validated());
+        $this->storeService->run($request->validated(), $request->user());
         return HttpResponse::noContent();
     }
 
@@ -47,13 +48,13 @@ class SubscriptionPlanController extends Controller
 
     public function update(UpdateSubscriptionPlanRequest $request, SubscriptionPlan $subscriptionPlan)
     {
-        $this->updateService->run($request->validated(), $subscriptionPlan);
+        $this->updateService->run($request->validated(), $subscriptionPlan, $request->user());
         return HttpResponse::noContent();
     }
 
-    public function destroy(SubscriptionPlan $subscriptionPlan)
+    public function destroy(Request $request, SubscriptionPlan $subscriptionPlan)
     {
-        $this->deleteService->run($subscriptionPlan);
+        $this->deleteService->run($subscriptionPlan, $request->user());
         return HttpResponse::noContent();
     }
 }

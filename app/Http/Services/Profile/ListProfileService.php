@@ -10,6 +10,6 @@ class ListProfileService
     public function run(DefaultFilter $filter)
     {
         $model = new Profile();
-        return $model->filterBy($filter)->get();
+        return $model->with('producerSetting')->filterBy($filter)->get();
     }
 }

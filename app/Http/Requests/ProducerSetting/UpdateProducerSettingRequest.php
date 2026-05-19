@@ -11,12 +11,18 @@ class UpdateProducerSettingRequest extends BaseRequest
         return [
             'farm_name' => ['sometimes', 'string'],
             'description' => ['sometimes', 'nullable', 'string'],
+            'certifications' => ['sometimes', 'nullable', 'string'],
             'address' => ['sometimes', 'nullable', 'string'],
             'city' => ['sometimes', 'nullable', 'string'],
             'state' => ['sometimes', 'nullable', 'string'],
+            'website' => ['sometimes', 'nullable', 'string'],
             'delivery_info' => ['sometimes', 'nullable', 'string'],
             'accepts_new_subscribers' => ['sometimes', 'boolean'],
             'visible_in_search' => ['sometimes', 'boolean'],
+            'email_notifications' => ['sometimes', 'boolean'],
+            'sms_notifications' => ['sometimes', 'boolean'],
+            'new_order_alert' => ['sometimes', 'boolean'],
+            'weekly_report' => ['sometimes', 'boolean'],
         ];
     }
 }

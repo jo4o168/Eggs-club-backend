@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Http\Services\Order;
+
+use App\Enum\OrderStatus;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+
+class StoreOrderService
+{
+    public function run(array $data, User $user): Order
+    {
+        $product = Product::query()->findOrFail((int) $data['product_id']);
+        abort_unless($product->is_active, 422, 'Este kit de ovos não está disponível.');
+        abort_unless((bool) $product->allow_one_time_purchase, 422, 'Este kit não aceita compra única.');
+
+        $quantity = max((int) ($data['quantity'] ?? 1), 1);
+        $unitPrice = (float) ($product->one_time_price ?? $product->price);
+
+        return DB::transaction(function () use ($data, $user, $product, $quantity, $unitPrice) {
+            $order = Order::create([
+                'order_number' => $this->generateOrderNumber(),
+                'delivery_address' => $data['delivery_address'] ?? null,
+                'notes' => $data['notes'] ?? null,
+                'status' => OrderStatus::PENDING->value,
+                'total_amount' => $unitPrice * $quantity,
+                'customer_id' => $user->profile->id,
+                'producer_id' => $product->producer_id,
+            ]);
+
+            OrderItem::create([
+                'product_name' => $product->name,
+                'quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'order_id' => $order->id,
+                'product_id' => $product->id,
+            ]);
+
+            return $order;
+        });
+    }
+
+    private function generateOrderNumber(): string
+    {
+        return 'ORD-' . now()->format('YmdHis') . '-' . str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+    }
+}
