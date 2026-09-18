@@ -70,6 +70,10 @@ class SubscriptionPlanProductLinkTest extends TestCase
         $product->refresh();
         $this->assertTrue((bool) $product->allow_subscription);
         $this->assertTrue((bool) $product->allow_one_time_purchase);
+
+        $catalog = $this->getJson('/api/public/products')->assertOk();
+        $catalogIds = collect($catalog->json('data'))->pluck('id')->all();
+        $this->assertContains($product->id, $catalogIds);
     }
 
     public function test_plan_can_create_subscription_only_product(): void
@@ -96,6 +100,9 @@ class SubscriptionPlanProductLinkTest extends TestCase
         $plan = SubscriptionPlan::query()->firstOrFail();
         $this->assertSame($product->id, (int) $plan->product_id);
         $this->assertSame(18, (int) $plan->eggs_quantity);
+
+        $catalogIds = collect($this->getJson('/api/public/products')->assertOk()->json('data'))->pluck('id')->all();
+        $this->assertNotContains($product->id, $catalogIds);
     }
 
     public function test_plan_requires_product_or_new_kit(): void

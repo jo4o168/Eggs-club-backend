@@ -26,9 +26,13 @@ class UpdateSubscriptionPlanService
         if (array_key_exists('product_id', $data) && $data['product_id']) {
             $product = Product::query()->findOrFail((int) $data['product_id']);
             abort_unless((int) $product->producer_id === (int) $user->profile->id, 403, 'Este kit não pertence a você.');
+            $keepOneTime = (bool) $product->allow_one_time_purchase || $product->one_time_price !== null;
             $product->allow_subscription = true;
             if (isset($data['price'])) {
                 $product->subscription_price = $data['price'];
+            }
+            if ($keepOneTime) {
+                $product->allow_one_time_purchase = true;
             }
             $product->save();
             $data['eggs_quantity'] = $data['eggs_quantity'] ?? $product->kit_quantity;

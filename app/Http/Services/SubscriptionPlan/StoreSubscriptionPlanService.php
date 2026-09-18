@@ -70,8 +70,12 @@ class StoreSubscriptionPlanService
         $product = Product::query()->findOrFail((int) $data['product_id']);
         abort_unless((int) $product->producer_id === $profileId, 403, 'Este kit não pertence a você.');
 
+        $keepOneTime = (bool) $product->allow_one_time_purchase || $product->one_time_price !== null;
         $product->allow_subscription = true;
         $product->subscription_price = $planPrice;
+        if ($keepOneTime) {
+            $product->allow_one_time_purchase = true;
+        }
         $product->save();
 
         return $product;

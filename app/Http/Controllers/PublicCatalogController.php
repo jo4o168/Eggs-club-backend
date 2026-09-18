@@ -16,7 +16,8 @@ class PublicCatalogController extends Controller
         $producers = Profile::query()
             ->with('producerSetting')
             ->where('role', 1)
-            ->get();
+            ->get()
+            ->map(fn (Profile $producer) => $this->publicProducer($producer));
 
         return HttpResponse::ok($producers);
     }
@@ -28,7 +29,30 @@ class PublicCatalogController extends Controller
             ->where('role', 1)
             ->findOrFail($id);
 
-        return HttpResponse::ok($producer);
+        return HttpResponse::ok($this->publicProducer($producer));
+    }
+
+    /**
+     * Public producer payload without contact details.
+     *
+     * @return array{id:int,name:string,producerSetting:?array{farm_name:?string,city:?string,state:?string},producer_setting:?array{farm_name:?string,city:?string,state:?string}}
+     */
+    private function publicProducer(Profile $producer): array
+    {
+        $setting = $producer->producerSetting
+            ? [
+                'farm_name' => $producer->producerSetting->farm_name,
+                'city' => $producer->producerSetting->city,
+                'state' => $producer->producerSetting->state,
+            ]
+            : null;
+
+        return [
+            'id' => $producer->id,
+            'name' => $producer->name,
+            'producerSetting' => $setting,
+            'producer_setting' => $setting,
+        ];
     }
 
     public function plans(Request $request): JsonResponse
@@ -47,6 +71,10 @@ class PublicCatalogController extends Controller
     {
         $products = Product::query()
             ->where('is_active', true)
+            ->where(function ($query) {
+                $query->where('allow_one_time_purchase', true)
+                    ->orWhereNotNull('one_time_price');
+            })
             ->when($request->filled('producer_id'), fn ($q) => $q->where('producer_id', (int) $request->input('producer_id')))
             ->get();
 
