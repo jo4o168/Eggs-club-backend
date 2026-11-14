@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enum\ProfileRole;
+use App\Notifications\ResetPasswordNotification;
+use App\Notifications\VerifyAccountNotification;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Auth\MustVerifyEmail;
@@ -69,5 +71,15 @@ class User extends Authenticatable implements MustVerifyEmailContract
     public function isClient(): bool
     {
         return $this->primaryRole() === ProfileRole::CLIENT;
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyAccountNotification);
+    }
+
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
