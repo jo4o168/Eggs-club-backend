@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Customer\CustomerCartController;
 use App\Http\Controllers\Customer\CustomerCheckoutController;
+use App\Http\Controllers\OrderNfeController;
+use App\Http\Controllers\OrderPixController;
+use App\Http\Controllers\OrderReviewController;
 use App\Http\Controllers\ProducerSettingController;
 use App\Http\Controllers\ProducerSettingMeController;
 use App\Http\Controllers\ProductController;
@@ -23,6 +26,7 @@ Route::get('/public/producers', [PublicCatalogController::class, 'producers']);
 Route::get('/public/producers/{id}', [PublicCatalogController::class, 'producer']);
 Route::get('/public/subscription-plans', [PublicCatalogController::class, 'plans']);
 Route::get('/public/products', [PublicCatalogController::class, 'products']);
+Route::get('/public/products/{id}/reviews', [PublicCatalogController::class, 'productReviews']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Contacts
@@ -56,6 +60,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //Orders
     Route::apiResource('/orders', OrderController::class)->only(['index', 'store', 'show', 'update']);
+    Route::get('/orders/{order}/pix', OrderPixController::class);
+    Route::get('/orders/{order}/nfe', OrderNfeController::class);
+    Route::post('/orders/{order}/reviews', [OrderReviewController::class, 'store']);
 
     //Payment Methods
     Route::apiResource('/payment-methods', PaymentMethodController::class)->only(['index', 'store', 'destroy']);

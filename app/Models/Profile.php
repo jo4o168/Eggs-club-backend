@@ -16,6 +16,9 @@ class Profile extends BaseModel
         'email',
         'phone',
         'cpf',
+        'cnpj',
+        'document_type',
+        'birth_date',
         'address',
         'address_number',
         'city',
@@ -34,5 +37,12 @@ class Profile extends BaseModel
     public function producerSetting(): HasOne
     {
         return $this->hasOne(ProducerSetting::class, 'producer_id');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'birth_date' => 'date',
+        ];
     }
 }

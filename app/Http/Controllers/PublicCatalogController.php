@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Helpers\HttpResponse;
-use App\Models\Profile;
 use App\Models\Product;
+use App\Models\ProductReview;
+use App\Models\Profile;
 use App\Models\SubscriptionPlan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -58,11 +59,16 @@ class PublicCatalogController extends Controller
     public function plans(Request $request): JsonResponse
     {
         $plans = SubscriptionPlan::query()
-            ->with(['product:id,name,kit_quantity,egg_size,egg_color,allow_one_time_purchase,image_url,producer_id'])
+            ->with(['product' => fn ($query) => $query->withAvg('reviews', 'rating')->withCount('reviews')])
             ->where('is_active', true)
             ->when($request->filled('producer_id'), fn ($q) => $q->where('producer_id', (int) $request->input('producer_id')))
             ->when($request->filled('product_id'), fn ($q) => $q->where('product_id', (int) $request->input('product_id')))
-            ->get();
+            ->get()
+            ->each(function (SubscriptionPlan $plan) {
+                if ($plan->product) {
+                    $this->applyPublicRating($plan->product);
+                }
+            });
 
         return HttpResponse::ok($plans);
     }
@@ -70,14 +76,47 @@ class PublicCatalogController extends Controller
     public function products(Request $request): JsonResponse
     {
         $products = Product::query()
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->where('is_active', true)
             ->where(function ($query) {
                 $query->where('allow_one_time_purchase', true)
                     ->orWhereNotNull('one_time_price');
             })
             ->when($request->filled('producer_id'), fn ($q) => $q->where('producer_id', (int) $request->input('producer_id')))
-            ->get();
+            ->get()
+            ->map(fn (Product $product) => $this->applyPublicRating($product));
 
         return HttpResponse::ok($products);
+    }
+
+    private function applyPublicRating(Product $product): Product
+    {
+        $product->setAttribute('rating_average', round((float) ($product->reviews_avg_rating ?? 0), 1));
+        $product->setAttribute('rating_count', (int) ($product->reviews_count ?? 0));
+        $product->makeHidden(['reviews_avg_rating', 'reviews_count']);
+
+        return $product;
+    }
+
+    public function productReviews(string $id): JsonResponse
+    {
+        Product::query()->findOrFail($id);
+
+        $reviews = ProductReview::query()
+            ->where('product_id', $id)
+            ->with('customer:id,name')
+            ->latest()
+            ->limit(30)
+            ->get()
+            ->map(fn (ProductReview $review) => [
+                'id' => $review->id,
+                'rating' => (int) $review->rating,
+                'comment' => $review->comment,
+                'customer_name' => $review->customer?->name,
+                'created_at' => $review->created_at,
+            ]);
+
+        return HttpResponse::ok($reviews);
     }
 }

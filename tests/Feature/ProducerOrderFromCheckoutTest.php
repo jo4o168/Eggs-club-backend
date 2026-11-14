@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Enum\CartPurchaseMode;
 use App\Enum\OrderStatus;
+use App\Enum\PaymentMethodType;
 use App\Enum\ProfileRole;
 use App\Models\CartItem;
 use App\Models\Order;
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Profile;
 use App\Models\SubscriptionPlan;
@@ -45,10 +47,20 @@ class ProducerOrderFromCheckoutTest extends TestCase
             'purchase_mode' => CartPurchaseMode::ONE_TIME->value,
         ]);
 
+        $payment = PaymentMethod::query()->create([
+            'type' => PaymentMethodType::PIX->value,
+            'is_default' => true,
+            'gateway_id' => 'demo',
+            'customer_id' => $customer->profile->id,
+            'expiration_month' => 1,
+            'expiration_year' => 2099,
+        ]);
+
         Sanctum::actingAs($customer);
         $this->postJson('/api/customer/checkout', [
             'delivery_address' => 'Rua das Galinhas, 10',
             'notes' => 'Entregar de manhã',
+            'payment_method_id' => $payment->id,
         ])->assertOk();
 
         $this->assertDatabaseHas('orders', [
@@ -121,8 +133,20 @@ class ProducerOrderFromCheckoutTest extends TestCase
             'subscription_plan_id' => $plan->id,
         ]);
 
+        $payment = PaymentMethod::query()->create([
+            'type' => PaymentMethodType::PIX->value,
+            'is_default' => true,
+            'gateway_id' => 'demo',
+            'customer_id' => $customer->profile->id,
+            'expiration_month' => 1,
+            'expiration_year' => 2099,
+        ]);
+
         Sanctum::actingAs($customer);
-        $this->postJson('/api/customer/checkout', [])->assertOk();
+        $this->postJson('/api/customer/checkout', [
+            'delivery_address' => 'Rua das Galinhas, 10 - Campinas/SP',
+            'payment_method_id' => $payment->id,
+        ])->assertOk();
 
         Sanctum::actingAs($producer);
         $producerOrders = $this->ordersFromResponse($this->getJson('/api/orders')->assertOk()->json('data'));
@@ -165,6 +189,9 @@ class ProducerOrderFromCheckoutTest extends TestCase
             'role' => $role->value,
             'email' => $email,
             'user_id' => $user->id,
+            'document_type' => 'cpf',
+            'cpf' => '39053344705',
+            'birth_date' => '1998-01-15',
         ]);
 
         return $user->fresh(['profile']);

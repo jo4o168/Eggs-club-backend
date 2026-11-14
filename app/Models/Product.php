@@ -52,6 +52,11 @@ class Product extends BaseModel
         return $this->hasMany(SubscriptionPlan::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
     protected function casts(): array
     {
         return [

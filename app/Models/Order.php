@@ -13,6 +13,9 @@ class Order extends BaseModel
         'delivery_address',
         'notes',
         'producer_message',
+        'nfe_access_key',
+        'nfe_number',
+        'nfe_issued_at',
         'status',
         'total_amount',
         'customer_id',
@@ -38,6 +41,19 @@ class Order extends BaseModel
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'nfe_issued_at' => 'datetime',
+            'total_amount' => 'decimal:2',
+        ];
     }
 
     public function scopeForProducer(Builder $query, int $profileId): Builder

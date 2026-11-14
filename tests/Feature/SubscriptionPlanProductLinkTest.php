@@ -74,6 +74,12 @@ class SubscriptionPlanProductLinkTest extends TestCase
         $catalog = $this->getJson('/api/public/products')->assertOk();
         $catalogIds = collect($catalog->json('data'))->pluck('id')->all();
         $this->assertContains($product->id, $catalogIds);
+
+        $plans = $this->getJson('/api/public/subscription-plans')->assertOk();
+        $listedPlan = collect($plans->json('data'))->firstWhere('id', $plan->id);
+        $this->assertSame(0.0, (float) data_get($listedPlan, 'product.rating_average'));
+        $this->assertSame(0, (int) data_get($listedPlan, 'product.rating_count'));
+        $this->assertArrayNotHasKey('reviews_avg_rating', $listedPlan['product'] ?? []);
     }
 
     public function test_plan_can_create_subscription_only_product(): void

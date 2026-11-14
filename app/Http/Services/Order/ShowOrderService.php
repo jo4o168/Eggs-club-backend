@@ -23,7 +23,8 @@ class ShowOrderService
 
         return $order->load([
             'items',
-            'customer:id,name,email',
+            'customer:id,name,email,cpf,cnpj,document_type,birth_date',
+            'reviews',
             'subscription.subscriptionPlan',
         ]);
     }

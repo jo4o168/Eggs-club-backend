@@ -19,12 +19,18 @@ class TestAccountsSeeder extends Seeder
             name: 'Cliente Teste',
             email: 'cliente@teste.com',
             role: ProfileRole::CLIENT,
+            documentType: 'cpf',
+            document: '39053344705',
+            birthDate: '1998-01-15',
         );
 
         $profile = $this->upsertAccount(
             name: 'Produtor Teste',
             email: 'produtor@teste.com',
             role: ProfileRole::PRODUCER,
+            documentType: 'cnpj',
+            document: '11444777000161',
+            birthDate: '1985-06-20',
         );
 
         ProducerSetting::query()->updateOrCreate(
@@ -36,7 +42,14 @@ class TestAccountsSeeder extends Seeder
         );
     }
 
-    private function upsertAccount(string $name, string $email, ProfileRole $role): Profile
+    private function upsertAccount(
+        string $name,
+        string $email,
+        ProfileRole $role,
+        string $documentType,
+        string $document,
+        string $birthDate,
+    ): Profile
     {
         $user = User::withTrashed()->where('email', $email)->first();
 
@@ -65,6 +78,10 @@ class TestAccountsSeeder extends Seeder
             'name' => $name,
             'role' => $role->value,
             'email' => $email,
+            'document_type' => $documentType,
+            'cpf' => $documentType === 'cpf' ? $document : null,
+            'cnpj' => $documentType === 'cnpj' ? $document : null,
+            'birth_date' => $birthDate,
             'deleted_at' => null,
         ];
 

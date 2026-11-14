@@ -32,6 +32,14 @@ class OrderDetailResource extends JsonResource
                 'unit_price' => (float) $item->unit_price,
                 'product_id' => $item->product_id,
             ])->values(),
+            'reviews' => $this->whenLoaded('reviews', fn () => $this->reviews->map(fn ($review) => [
+                'id' => $review->id,
+                'product_id' => (int) $review->product_id,
+                'rating' => (int) $review->rating,
+                'comment' => $review->comment,
+            ])->values()),
+            'nfe_access_key' => $this->nfe_access_key,
+            'nfe_number' => $this->nfe_number,
             'created_at' => $this->created_at,
         ];
     }

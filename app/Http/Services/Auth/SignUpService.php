@@ -6,6 +6,7 @@ use App\Enum\ProfileRole;
 use App\Models\ProducerSetting;
 use App\Models\Profile;
 use App\Models\User;
+use App\Support\IdentityValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -27,6 +28,7 @@ class SignUpService
                 'role' => $data['role'],
                 'email' => $data['email'],
                 'user_id' => $user->id,
+                ...IdentityValidator::persistable($data),
             ]);
 
             if ((int) $data['role'] === ProfileRole::PRODUCER->value) {

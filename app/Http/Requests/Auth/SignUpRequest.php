@@ -3,8 +3,10 @@
 namespace App\Http\Requests\Auth;
 
 use App\Enum\ProfileRole;
+use App\Support\IdentityValidator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class SignUpRequest extends FormRequest
 {
@@ -18,6 +20,11 @@ class SignUpRequest extends FormRequest
         if (is_string($email) && $email !== '') {
             $this->merge(['username' => $email]);
         }
+
+        $role = (int) $this->input('role', ProfileRole::CLIENT->value);
+        if ($role === ProfileRole::CLIENT->value) {
+            $this->merge(['document_type' => 'cpf']);
+        }
     }
 
     public function rules(): array
@@ -27,6 +34,9 @@ class SignUpRequest extends FormRequest
             "email" => ["required", "email", "unique:users"],
             "name" => ["required", "string"],
             'role' => ['required', 'integer', Rule::in([ProfileRole::CLIENT->value, ProfileRole::PRODUCER->value])],
+            'document_type' => ['required', 'in:cpf,cnpj'],
+            'document' => ['required', 'string', 'max:18'],
+            'birth_date' => ['required', 'date', 'before_or_equal:today'],
             "farm_name" => ["sometimes", "nullable", "string", "max:255"],
             "location" => ["sometimes", "nullable", "string", "max:255"],
             "password" => [
@@ -53,6 +63,16 @@ class SignUpRequest extends FormRequest
             'role' => 'tipo de conta',
             'farm_name' => 'nome da propriedade',
             'location' => 'localização',
+            'document' => 'CPF/CNPJ',
+            'document_type' => 'tipo de documento',
+            'birth_date' => 'data de nascimento',
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            IdentityValidator::after($validator, $this->all());
+        });
     }
 }

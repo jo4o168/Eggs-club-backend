@@ -9,6 +9,7 @@ use App\Models\CartItem;
 use App\Models\PaymentMethod;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
+use App\Support\BrazilianDocument;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -27,6 +28,12 @@ class CheckoutCartService
         $requirementErrors = CheckoutRequirements::errors($data);
         if ($requirementErrors !== []) {
             throw ValidationException::withMessages($requirementErrors);
+        }
+
+        $user->loadMissing('profile');
+        $identityErrors = $this->identityErrors($user);
+        if ($identityErrors !== []) {
+            throw ValidationException::withMessages($identityErrors);
         }
 
         $customerId = (int) $user->profile->id;
@@ -110,5 +117,30 @@ class CheckoutCartService
             'order_ids' => $orderIds,
             'subscription_ids' => $subscriptionIds,
         ];
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function identityErrors(User $user): array
+    {
+        $profile = $user->profile;
+        $type = strtolower((string) ($profile?->document_type ?? 'cpf'));
+        $document = $type === 'cnpj' ? $profile?->cnpj : $profile?->cpf;
+        $birthDate = $profile?->birth_date?->toDateString();
+        $errors = [];
+
+        $validDocument = $type === 'cnpj'
+            ? BrazilianDocument::isValidCnpj($document)
+            : BrazilianDocument::isValidCpf($document);
+
+        if (! $validDocument) {
+            $errors['document'] = ['Complete um CPF válido no perfil antes de finalizar a compra.'];
+        }
+        if (! BrazilianDocument::isAdult($birthDate)) {
+            $errors['birth_date'] = ['É necessário ter 18 anos ou mais. Atualize a data de nascimento no perfil.'];
+        }
+
+        return $errors;
     }
 }
