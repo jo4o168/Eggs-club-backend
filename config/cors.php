@@ -10,10 +10,14 @@ $fromEnv = array_filter(array_map(
     ),
 ));
 
+$allowAnyOrigin = filter_var(env('CORS_ALLOW_ANY_ORIGIN', true), FILTER_VALIDATE_BOOLEAN);
+
 return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => array_values(array_unique(array_merge($defaults, $fromEnv))),
+    'allowed_origins' => $allowAnyOrigin
+        ? ['*']
+        : array_values(array_unique(array_merge($defaults, $fromEnv))),
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
