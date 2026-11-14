@@ -16,6 +16,11 @@ class StoreProductReviewService
         abort_unless($user->isClient(), 403);
         abort_unless((int) $order->customer_id === (int) $user->profile->id, 403);
         abort_if((int) $order->status === OrderStatus::CANCELLED->value, 422, 'Pedido cancelado não pode ser avaliado.');
+        abort_unless(
+            (int) $order->status === OrderStatus::DELIVERED->value,
+            422,
+            'Só é possível avaliar depois que o pedido for entregue.'
+        );
 
         $productId = (int) $data['product_id'];
         $bought = $order->items()->where('product_id', $productId)->exists();

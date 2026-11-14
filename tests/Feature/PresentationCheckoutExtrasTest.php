@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Enum\CartPurchaseMode;
 use App\Enum\PaymentMethodType;
 use App\Enum\ProfileRole;
+use App\Enum\OrderStatus;
 use App\Models\CartItem;
+use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Profile;
@@ -78,6 +80,12 @@ class PresentationCheckoutExtrasTest extends TestCase
         $orderId = $checkout->json('data.order_ids.0');
         $this->assertNotEmpty($orderId);
 
+        $this->postJson("/api/orders/{$orderId}/reviews", [
+            'product_id' => $product->id,
+            'rating' => 5,
+            'comment' => 'Ainda não recebi.',
+        ])->assertStatus(422);
+
         $pix = $this->getJson("/api/orders/{$orderId}/pix")->assertOk();
         $this->assertTrue($pix->json('data.demo'));
         $this->assertStringContainsString('br.gov.bcb.pix', $pix->json('data.copia_e_cola'));
@@ -85,6 +93,10 @@ class PresentationCheckoutExtrasTest extends TestCase
         $nfe = $this->getJson("/api/orders/{$orderId}/nfe")->assertOk();
         $this->assertTrue($nfe->json('data.demo'));
         $this->assertSame(44, strlen((string) $nfe->json('data.access_key')));
+
+        Order::query()->whereKey($orderId)->update([
+            'status' => OrderStatus::DELIVERED->value,
+        ]);
 
         $this->postJson("/api/orders/{$orderId}/reviews", [
             'product_id' => $product->id,

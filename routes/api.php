@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Customer\CustomerCartController;
 use App\Http\Controllers\Customer\CustomerCheckoutController;
+use App\Http\Controllers\OrderDeliveryController;
+use App\Http\Controllers\OrderDeliveryIssueController;
 use App\Http\Controllers\OrderNfeController;
 use App\Http\Controllers\OrderPixController;
 use App\Http\Controllers\OrderReviewController;
@@ -63,6 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{order}/pix', OrderPixController::class);
     Route::get('/orders/{order}/nfe', OrderNfeController::class);
     Route::post('/orders/{order}/reviews', [OrderReviewController::class, 'store']);
+    Route::post('/orders/{order}/confirm-delivery', [OrderDeliveryController::class, 'store']);
+    Route::post('/orders/{order}/delivery-issues', [OrderDeliveryIssueController::class, 'store']);
+    Route::put('/orders/{order}/delivery-issues', [OrderDeliveryIssueController::class, 'update']);
 
     //Payment Methods
     Route::apiResource('/payment-methods', PaymentMethodController::class)->only(['index', 'store', 'destroy']);

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enum\ProfileRole;
 use App\Models\ProducerSetting;
+use App\Models\Product;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -40,6 +41,11 @@ class TestAccountsSeeder extends Seeder
                 'address' => 'São Paulo, SP',
             ],
         );
+
+        Product::query()
+            ->where('producer_id', $profile->id)
+            ->where('stock_quantity', '<=', 0)
+            ->update(['stock_quantity' => 10]);
     }
 
     private function upsertAccount(
