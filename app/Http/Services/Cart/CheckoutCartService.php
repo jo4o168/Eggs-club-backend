@@ -3,6 +3,7 @@
 namespace App\Http\Services\Cart;
 
 use App\Enum\CartPurchaseMode;
+use App\Enum\PaymentMethodType;
 use App\Http\Services\Order\StoreOrderService;
 use App\Http\Services\Subscription\StoreSubscriptionService;
 use App\Models\CartItem;
@@ -56,6 +57,23 @@ class CheckoutCartService
 
         if ($items->isEmpty()) {
             throw ValidationException::withMessages(['cart' => ['O carrinho está vazio.']]);
+        }
+
+        $hasSubscription = $items->contains(function (CartItem $item) {
+            $mode = $item->purchase_mode instanceof CartPurchaseMode
+                ? $item->purchase_mode
+                : CartPurchaseMode::from((string) $item->purchase_mode);
+
+            return $mode === CartPurchaseMode::SUBSCRIPTION;
+        });
+
+        if ($hasSubscription) {
+            abort_unless($payment, 422, 'Assinatura exige um cartão de crédito.');
+            abort_unless(
+                PaymentMethodType::tryFrom((int) $payment->type) === PaymentMethodType::CREDIT_CARD,
+                422,
+                'Planos de assinatura aceitam apenas cartão de crédito.',
+            );
         }
 
         $orderIds = [];

@@ -8,7 +8,7 @@ use App\Models\User;
 
 class StorePaymentMethodService
 {
-    public function run(array $data, User $user): void
+    public function run(array $data, User $user): PaymentMethod
     {
         $typeMap = [
             'credit_card' => PaymentMethodType::CREDIT_CARD->value,
@@ -22,7 +22,7 @@ class StorePaymentMethodService
             PaymentMethod::query()->where('customer_id', $profileId)->update(['is_default' => false]);
         }
 
-        PaymentMethod::create([
+        return PaymentMethod::create([
             'type' => $typeMap[$data['type']],
             'card_last_four' => $data['last_four'] ?? null,
             'card_brand' => $data['card_brand'] ?? null,

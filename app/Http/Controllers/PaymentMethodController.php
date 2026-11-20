@@ -30,10 +30,11 @@ class PaymentMethodController extends Controller
         return HttpResponse::ok(PaymentMethodResource::collection($result));
     }
 
-    public function store(StorePaymentMethodRequest $request): Response
+    public function store(StorePaymentMethodRequest $request): JsonResponse
     {
-        $this->storeService->run($request->validated(), $request->user());
-        return HttpResponse::noContent();
+        $method = $this->storeService->run($request->validated(), $request->user());
+
+        return HttpResponse::created((new PaymentMethodResource($method))->resolve($request));
     }
 
     public function destroy(Request $request, PaymentMethod $paymentMethod): Response

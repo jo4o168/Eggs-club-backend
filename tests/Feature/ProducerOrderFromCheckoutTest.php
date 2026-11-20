@@ -134,7 +134,9 @@ class ProducerOrderFromCheckoutTest extends TestCase
         ]);
 
         $payment = PaymentMethod::query()->create([
-            'type' => PaymentMethodType::PIX->value,
+            'type' => PaymentMethodType::CREDIT_CARD->value,
+            'card_last_four' => '4242',
+            'card_brand' => 'Visa',
             'is_default' => true,
             'gateway_id' => 'demo',
             'customer_id' => $customer->profile->id,
@@ -154,6 +156,51 @@ class ProducerOrderFromCheckoutTest extends TestCase
         $this->assertCount(1, $producerOrders);
         $this->assertSame('Kit assinatura', $producerOrders[0]['items'][0]['product_name']);
         $this->assertEquals(42.0, $producerOrders[0]['total_amount']);
+    }
+
+    public function test_subscription_checkout_rejects_pix(): void
+    {
+        $producer = $this->createAccount(ProfileRole::PRODUCER, 'producer-pix@example.com');
+        $customer = $this->createAccount(ProfileRole::CLIENT, 'customer-pix@example.com');
+
+        $product = Product::query()->create([
+            'name' => 'Kit plano',
+            'price' => 40.00,
+            'allow_subscription' => true,
+            'allow_one_time_purchase' => false,
+            'is_active' => true,
+            'producer_id' => $producer->profile->id,
+            'unit' => 0,
+        ]);
+        $plan = SubscriptionPlan::query()->create([
+            'name' => 'Mensal',
+            'price' => 40.00,
+            'eggs_quantity' => 12,
+            'frequency' => 2,
+            'is_active' => true,
+            'producer_id' => $producer->profile->id,
+        ]);
+        CartItem::query()->create([
+            'customer_id' => $customer->profile->id,
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'purchase_mode' => CartPurchaseMode::SUBSCRIPTION->value,
+            'subscription_plan_id' => $plan->id,
+        ]);
+        $payment = PaymentMethod::query()->create([
+            'type' => PaymentMethodType::PIX->value,
+            'is_default' => true,
+            'gateway_id' => 'demo',
+            'customer_id' => $customer->profile->id,
+            'expiration_month' => 1,
+            'expiration_year' => 2099,
+        ]);
+
+        Sanctum::actingAs($customer);
+        $this->postJson('/api/customer/checkout', [
+            'delivery_address' => 'Rua das Galinhas, 10 - Campinas/SP',
+            'payment_method_id' => $payment->id,
+        ])->assertStatus(422);
     }
 
     /**

@@ -2,8 +2,10 @@
 
 namespace App\Http\Services\Subscription;
 
+use App\Enum\PaymentMethodType;
 use App\Enum\SubscriptionFrequency;
 use App\Enum\SubscriptionStatus;
+use App\Models\PaymentMethod;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
@@ -15,9 +17,23 @@ class StoreSubscriptionService
     public function run(array $data, ?User $user = null): Subscription
     {
         $user ??= Auth::user();
+        $user?->loadMissing('profile');
         $plan = SubscriptionPlan::query()->findOrFail((int) $data['subscription_plan_id']);
 
         abort_unless($plan->is_active, 422, 'Este plano não está disponível.');
+
+        $paymentId = isset($data['payment_method_id']) ? (int) $data['payment_method_id'] : 0;
+        abort_unless($paymentId > 0, 422, 'Assinatura exige um cartão de crédito.');
+        $payment = PaymentMethod::query()
+            ->where('id', $paymentId)
+            ->where('customer_id', $user->profile->id)
+            ->first();
+        abort_unless($payment, 422, 'Método de pagamento inválido.');
+        abort_unless(
+            PaymentMethodType::tryFrom((int) $payment->type) === PaymentMethodType::CREDIT_CARD,
+            422,
+            'Planos de assinatura aceitam apenas cartão de crédito.',
+        );
 
         $payload = [
             'status' => SubscriptionStatus::ACTIVE->value,

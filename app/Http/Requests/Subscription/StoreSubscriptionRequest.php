@@ -34,8 +34,7 @@ class StoreSubscriptionRequest extends BaseRequest
                 }),
             ],
             'payment_method_id' => [
-                'sometimes',
-                'nullable',
+                'required',
                 'integer',
                 Rule::exists('payment_methods', 'id')->where('customer_id', $this->user()->profile->id),
             ],
