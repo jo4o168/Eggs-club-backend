@@ -15,4 +15,16 @@ enum OrderStatus: int
     case DELIVERED = 4;
 
     case CANCELLED = 5;
+
+    public function customerNotice(): ?string
+    {
+        return match ($this) {
+            self::PENDING => null,
+            self::CONFIRMED => 'Seu pedido foi confirmado e está em preparação.',
+            self::PREPARING => 'O produtor está preparando o seu kit.',
+            self::SHIPPED => 'Seu pedido saiu para entrega.',
+            self::DELIVERED => 'Seu pedido foi entregue.',
+            self::CANCELLED => null,
+        };
+    }
 }

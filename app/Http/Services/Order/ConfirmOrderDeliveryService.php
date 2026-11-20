@@ -19,7 +19,10 @@ class ConfirmOrderDeliveryService
             'Confirme o recebimento só depois que o pedido estiver a caminho.'
         );
 
-        $order->update(['status' => OrderStatus::DELIVERED->value]);
+        $order->update([
+            'status' => OrderStatus::DELIVERED->value,
+            'producer_message' => OrderStatus::DELIVERED->customerNotice(),
+        ]);
 
         return $order->fresh();
     }

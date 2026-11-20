@@ -28,19 +28,18 @@ class UpdateOrderStatusService
             'cancelled' => OrderStatus::CANCELLED->value,
         ];
 
+        $status = OrderStatus::from($statusMap[$statusKey]);
         $payload = [
-            'status' => $statusMap[$statusKey],
+            'status' => $status->value,
         ];
 
-        if ($statusKey === 'cancelled') {
+        if ($status === OrderStatus::CANCELLED) {
             $payload['producer_message'] = trim((string) $data['producer_message']);
-        } elseif ($statusKey === 'confirmed') {
-            $message = trim((string) ($data['producer_message'] ?? ''));
-            $payload['producer_message'] = $message !== ''
-                ? $message
-                : 'Seu pedido foi confirmado e está em preparação.';
-        } elseif (! empty($data['producer_message'])) {
-            $payload['producer_message'] = trim((string) $data['producer_message']);
+        } else {
+            $custom = trim((string) ($data['producer_message'] ?? ''));
+            $payload['producer_message'] = $custom !== ''
+                ? $custom
+                : $status->customerNotice();
         }
 
         $order->update($payload);

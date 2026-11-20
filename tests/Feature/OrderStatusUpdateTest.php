@@ -50,7 +50,41 @@ class OrderStatusUpdateTest extends TestCase
 
         $order->refresh();
         $this->assertSame(OrderStatus::CONFIRMED->value, (int) $order->status);
-        $this->assertSame('Seu pedido foi confirmado e está em preparação.', $order->producer_message);
+        $this->assertSame(OrderStatus::CONFIRMED->customerNotice(), $order->producer_message);
+    }
+
+    public function test_marking_delivered_replaces_preparation_message(): void
+    {
+        [$producer, $order] = $this->makeProducerOrder();
+        Sanctum::actingAs($producer);
+
+        $this->putJson("/api/orders/{$order->id}", ['status' => 'confirmed'])->assertNoContent();
+        $this->putJson("/api/orders/{$order->id}", ['status' => 'preparing'])->assertNoContent();
+        $this->putJson("/api/orders/{$order->id}", ['status' => 'shipped'])->assertNoContent();
+        $this->putJson("/api/orders/{$order->id}", ['status' => 'delivered'])->assertNoContent();
+
+        $order->refresh();
+        $this->assertSame(OrderStatus::DELIVERED->value, (int) $order->status);
+        $this->assertSame(OrderStatus::DELIVERED->customerNotice(), $order->producer_message);
+
+        $this->getJson("/api/orders/{$order->id}")
+            ->assertOk()
+            ->assertJsonPath('data.producer_message', OrderStatus::DELIVERED->customerNotice())
+            ->assertJsonPath('data.status', 'delivered');
+    }
+
+    public function test_stale_preparation_notice_is_hidden_after_delivery(): void
+    {
+        [$producer, $order] = $this->makeProducerOrder();
+        $order->update([
+            'status' => OrderStatus::DELIVERED->value,
+            'producer_message' => OrderStatus::CONFIRMED->customerNotice(),
+        ]);
+
+        Sanctum::actingAs($producer);
+        $this->getJson("/api/orders/{$order->id}")
+            ->assertOk()
+            ->assertJsonPath('data.producer_message', OrderStatus::DELIVERED->customerNotice());
     }
 
     /**

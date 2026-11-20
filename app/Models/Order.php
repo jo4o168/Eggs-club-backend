@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enum\OrderStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -65,6 +66,23 @@ class Order extends BaseModel
             'total_amount' => 'decimal:2',
             'payment_type' => 'integer',
         ];
+    }
+
+    public function visibleProducerMessage(): ?string
+    {
+        $status = OrderStatus::tryFrom((int) $this->status) ?? OrderStatus::PENDING;
+        $stored = $this->producer_message;
+
+        if ($status === OrderStatus::CANCELLED) {
+            return $stored;
+        }
+
+        $stalePreparation = OrderStatus::CONFIRMED->customerNotice();
+        if ($stored === $stalePreparation && $status !== OrderStatus::CONFIRMED) {
+            return $status->customerNotice();
+        }
+
+        return $stored;
     }
 
     public function scopeForProducer(Builder $query, int $profileId): Builder
