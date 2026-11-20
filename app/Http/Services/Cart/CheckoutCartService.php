@@ -38,13 +38,14 @@ class CheckoutCartService
 
         $customerId = (int) $user->profile->id;
         $pmId = isset($data['payment_method_id']) ? (int) $data['payment_method_id'] : null;
+        $payment = null;
 
         if ($pmId) {
-            $ok = PaymentMethod::query()
+            $payment = PaymentMethod::query()
                 ->where('id', $pmId)
                 ->where('customer_id', $customerId)
-                ->exists();
-            abort_unless($ok, 422, 'Método de pagamento inválido.');
+                ->first();
+            abort_unless($payment, 422, 'Método de pagamento inválido.');
         }
 
         $items = CartItem::query()
@@ -60,7 +61,7 @@ class CheckoutCartService
         $orderIds = [];
         $subscriptionIds = [];
 
-        DB::transaction(function () use ($items, $user, $data, $pmId, &$orderIds, &$subscriptionIds) {
+        DB::transaction(function () use ($items, $user, $data, $pmId, $payment, &$orderIds, &$subscriptionIds) {
             foreach ($items as $item) {
                 $product = $item->product;
                 abort_if(! $product, 422, 'Produto inválido no carrinho.');
@@ -77,6 +78,7 @@ class CheckoutCartService
                         'quantity' => max(1, (int) $item->quantity),
                         'delivery_address' => $data['delivery_address'] ?? null,
                         'notes' => $data['notes'] ?? null,
+                        ...$this->paymentSnapshot($payment),
                     ], $user);
                     $orderIds[] = $order->id;
                 } else {
@@ -105,6 +107,7 @@ class CheckoutCartService
                         'notes' => $data['notes'] ?? null,
                         'subscription_id' => $sub->id,
                         'unit_price' => (float) $plan->price,
+                        ...$this->paymentSnapshot($payment),
                     ], $user);
                     $orderIds[] = $order->id;
                 }
@@ -142,5 +145,18 @@ class CheckoutCartService
         }
 
         return $errors;
+    }
+
+    /**
+     * @return array{payment_method_id:?int,payment_type:?int,payment_brand:?string,payment_last_four:?string}
+     */
+    private function paymentSnapshot(?PaymentMethod $payment): array
+    {
+        return [
+            'payment_method_id' => $payment?->id,
+            'payment_type' => $payment?->type !== null ? (int) $payment->type : null,
+            'payment_brand' => $payment?->card_brand,
+            'payment_last_four' => $payment?->card_last_four,
+        ];
     }
 }

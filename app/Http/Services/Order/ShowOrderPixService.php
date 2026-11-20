@@ -2,6 +2,7 @@
 
 namespace App\Http\Services\Order;
 
+use App\Enum\PaymentMethodType;
 use App\Models\Order;
 use App\Models\User;
 use App\Support\PixBrCode;
@@ -18,6 +19,12 @@ class ShowOrderPixService
     public function run(Order $order, User $user): array
     {
         $order = $this->showOrder->run($order, $user);
+        abort_unless(
+            $order->payment_type !== null
+                && PaymentMethodType::tryFrom((int) $order->payment_type) === PaymentMethodType::PIX,
+            422,
+            'Este pedido não foi pago com Pix.',
+        );
         $payload = PixBrCode::payload(
             'eggsclub@demo.com',
             "Egg's Club",

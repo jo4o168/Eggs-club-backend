@@ -41,6 +41,10 @@ class StoreOrderService
                 'customer_id' => $user->profile->id,
                 'producer_id' => $product->producer_id,
                 'subscription_id' => $data['subscription_id'] ?? null,
+                'payment_method_id' => $data['payment_method_id'] ?? null,
+                'payment_type' => $data['payment_type'] ?? null,
+                'payment_brand' => $data['payment_brand'] ?? null,
+                'payment_last_four' => $data['payment_last_four'] ?? null,
             ]);
 
             OrderItem::create([

@@ -4,6 +4,7 @@ namespace App\Http\Resources\Orders;
 
 use App\Enum\DeliveryIssueRequest;
 use App\Enum\OrderStatus;
+use App\Enum\PaymentMethodType;
 use App\Http\Services\Order\OrderReplacementAvailability;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -57,6 +58,7 @@ class OrderDetailResource extends JsonResource
                 'rating' => (int) $review->rating,
                 'comment' => $review->comment,
             ])->values()),
+            'payment' => $this->paymentSummary(),
             'nfe_access_key' => $this->nfe_access_key,
             'nfe_number' => $this->nfe_number,
             'delivery_issue' => $hasIssue ? [
@@ -73,6 +75,23 @@ class OrderDetailResource extends JsonResource
                 'resolved_at' => $issue->resolved_at,
             ] : null,
             'created_at' => $this->created_at,
+        ];
+    }
+
+    /**
+     * @return array{type:string,last_four:?string,card_brand:?string}|null
+     */
+    private function paymentSummary(): ?array
+    {
+        $type = PaymentMethodType::slugOrNull($this->payment_type);
+        if ($type === null) {
+            return null;
+        }
+
+        return [
+            'type' => $type,
+            'last_four' => $this->payment_last_four,
+            'card_brand' => $this->payment_brand,
         ];
     }
 }

@@ -24,8 +24,8 @@ class ShowProductResource extends JsonResource
             'price' => $this->price,
             'subscription_price' => $this->subscription_price,
             'one_time_price' => $this->one_time_price,
-            'allow_subscription' => $this->allow_subscription,
-            'allow_one_time_purchase' => $this->allow_one_time_purchase,
+            'allow_subscription' => (bool) $this->allow_subscription,
+            'allow_one_time_purchase' => (bool) $this->allow_one_time_purchase,
             'active' => $this->is_active,
             'image_url' => $this->image_url,
             'producer' => [

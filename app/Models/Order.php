@@ -22,6 +22,10 @@ class Order extends BaseModel
         'customer_id',
         'producer_id',
         'subscription_id',
+        'payment_method_id',
+        'payment_type',
+        'payment_brand',
+        'payment_last_four',
     ];
 
     public function customer(): BelongsTo
@@ -59,6 +63,7 @@ class Order extends BaseModel
         return [
             'nfe_issued_at' => 'datetime',
             'total_amount' => 'decimal:2',
+            'payment_type' => 'integer',
         ];
     }
 

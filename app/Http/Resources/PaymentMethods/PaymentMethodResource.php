@@ -12,7 +12,7 @@ class PaymentMethodResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'type' => strtolower(PaymentMethodType::from((int) $this->type)->name),
+            'type' => PaymentMethodType::from((int) $this->type)->slug(),
             'last_four' => $this->card_last_four,
             'card_brand' => $this->card_brand,
             'expiration_month' => $this->expiration_month,

@@ -79,15 +79,52 @@ class PublicCatalogController extends Controller
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->where('is_active', true)
-            ->where(function ($query) {
-                $query->where('allow_one_time_purchase', true)
-                    ->orWhereNotNull('one_time_price');
-            })
+            ->when(
+                $request->input('sale') === 'one_time',
+                fn ($q) => $q->where('allow_one_time_purchase', true),
+            )
             ->when($request->filled('producer_id'), fn ($q) => $q->where('producer_id', (int) $request->input('producer_id')))
             ->get()
-            ->map(fn (Product $product) => $this->applyPublicRating($product));
+            ->map(fn (Product $product) => $this->publicProduct($product));
 
         return HttpResponse::ok($products);
+    }
+
+    public function product(string $id): JsonResponse
+    {
+        $product = Product::query()
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->where('is_active', true)
+            ->findOrFail($id);
+
+        return HttpResponse::ok($this->publicProduct($product));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function publicProduct(Product $product): array
+    {
+        $this->applyPublicRating($product);
+
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'description' => $product->description,
+            'egg_size' => $product->egg_size,
+            'egg_color' => $product->egg_color,
+            'kit_quantity' => $product->kit_quantity,
+            'one_time_price' => $product->one_time_price !== null ? (float) $product->one_time_price : null,
+            'subscription_price' => $product->subscription_price !== null ? (float) $product->subscription_price : null,
+            'allow_subscription' => (bool) $product->allow_subscription,
+            'allow_one_time_purchase' => (bool) $product->allow_one_time_purchase,
+            'stock_quantity' => $product->stock_quantity,
+            'image_url' => $product->image_url,
+            'producer_id' => (int) $product->producer_id,
+            'rating_average' => $product->rating_average,
+            'rating_count' => $product->rating_count,
+        ];
     }
 
     private function applyPublicRating(Product $product): Product

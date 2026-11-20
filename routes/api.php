@@ -28,6 +28,7 @@ Route::get('/public/producers', [PublicCatalogController::class, 'producers']);
 Route::get('/public/producers/{id}', [PublicCatalogController::class, 'producer']);
 Route::get('/public/subscription-plans', [PublicCatalogController::class, 'plans']);
 Route::get('/public/products', [PublicCatalogController::class, 'products']);
+Route::get('/public/products/{id}', [PublicCatalogController::class, 'product']);
 Route::get('/public/products/{id}/reviews', [PublicCatalogController::class, 'productReviews']);
 
 Route::middleware('auth:sanctum')->group(function () {
