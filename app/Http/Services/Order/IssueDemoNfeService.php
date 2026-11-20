@@ -20,6 +20,7 @@ class IssueDemoNfeService
         $order = $this->showOrder->run($order, $user)->loadMissing(['items', 'customer', 'producer.producerSetting']);
 
         if (! $order->nfe_access_key) {
+            abort_unless($user->isProducer(), 403, 'Somente o produtor emite a nota fiscal.');
             $order->nfe_number = $order->id + 1000;
             $order->nfe_issued_at = now();
             $order->nfe_access_key = $this->accessKey($order);

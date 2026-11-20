@@ -38,6 +38,7 @@ class OrderDetailResource extends JsonResource
             'can_report_issue' => (bool) $user?->isClient() && $status === 'delivered' && ! $hasIssue,
             'can_resolve_issue' => (bool) $user?->isProducer() && $hasIssue && $issue->status === 'open',
             'can_replace' => (bool) $user?->isProducer() && $hasIssue && $issue->status === 'open' && $stock['can_replace'],
+            'can_issue_nfe' => (bool) $user?->isProducer() && blank($this->nfe_access_key),
             'suggested_resolution' => $hasIssue && $issue->status === 'open' ? $suggested : null,
             'replacement_stock' => $stock['lines'],
             'customer' => $this->customer ? [

@@ -90,9 +90,17 @@ class PresentationCheckoutExtrasTest extends TestCase
         $this->assertTrue($pix->json('data.demo'));
         $this->assertStringContainsString('br.gov.bcb.pix', $pix->json('data.copia_e_cola'));
 
+        $this->getJson("/api/orders/{$orderId}/nfe")->assertForbidden();
+
+        Sanctum::actingAs($producer);
         $nfe = $this->getJson("/api/orders/{$orderId}/nfe")->assertOk();
         $this->assertTrue($nfe->json('data.demo'));
         $this->assertSame(44, strlen((string) $nfe->json('data.access_key')));
+
+        Sanctum::actingAs($customer);
+        $this->getJson("/api/orders/{$orderId}/nfe")
+            ->assertOk()
+            ->assertJsonPath('data.access_key', $nfe->json('data.access_key'));
 
         Order::query()->whereKey($orderId)->update([
             'status' => OrderStatus::DELIVERED->value,
